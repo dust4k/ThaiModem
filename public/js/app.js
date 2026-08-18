@@ -1,0 +1,186 @@
+import { Direction, labelsFor, swapDirection } from "./models.js";
+import { GrokTranslatorService } from "./grokTranslator.js";
+import { getApiKey, getModel, initSettings } from "./settings.js";
+
+const els = {
+  banner: document.getElementById("banner"),
+  inputText: document.getElementById("input-text"),
+  inputLanguage: document.getElementById("input-language"),
+  outputLanguage: document.getElementById("output-language"),
+  submitBtn: document.getElementById("submit-btn"),
+  clearBtn: document.getElementById("clear-btn"),
+  directionBtn: document.getElementById("direction-btn"),
+  empty: document.getElementById("output-empty"),
+  loading: document.getElementById("output-loading"),
+  result: document.getElementById("output-result"),
+};
+
+let direction = Direction.englishToThai;
+let bannerTimer = 0;
+const settings = initSettings();
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function showBanner(message, { openSettings = false } = {}) {
+  els.banner.textContent = message;
+  els.banner.classList.remove("hidden");
+  window.clearTimeout(bannerTimer);
+  bannerTimer = window.setTimeout(() => hideBanner(), 4000);
+  if (openSettings) {
+    settings.open();
+  }
+}
+
+function hideBanner() {
+  els.banner.classList.add("hidden");
+}
+
+els.banner.addEventListener("click", hideBanner);
+
+function applyDirectionLabels() {
+  const labels = labelsFor(direction);
+  els.inputLanguage.textContent = labels.input;
+  els.outputLanguage.textContent = labels.output;
+  els.inputText.placeholder = labels.placeholder;
+  els.directionBtn.textContent = labels.toggle;
+}
+
+function setLoading(isLoading) {
+  els.submitBtn.disabled = isLoading;
+  els.inputText.disabled = isLoading;
+  els.directionBtn.disabled = isLoading;
+  els.loading.classList.toggle("hidden", !isLoading);
+  if (isLoading) {
+    els.empty.classList.add("hidden");
+    els.result.classList.add("hidden");
+  }
+}
+
+function renderResult(result) {
+  const note = result.cultural_or_grammar_note
+    ? `<p class="note">${escapeHtml(result.cultural_or_grammar_note)}</p>`
+    : "";
+
+  const words = result.word_breakdown
+    .map(
+      (word) => `
+      <div class="breakdown-row">
+        <div class="breakdown-original">${escapeHtml(word.original_word)}</div>
+        <div class="breakdown-meta">
+          <span>${escapeHtml(word.romanization)}</span>
+          <span class="pos">${escapeHtml(word.part_of_speech)}</span>
+          <span>${escapeHtml(word.meaning)}</span>
+        </div>
+      </div>`
+    )
+    .join("");
+
+  const breakdown = result.word_breakdown.length
+    ? `<details class="card" open>
+        <summary>Word breakdown (${result.word_breakdown.length})</summary>
+        ${words}
+      </details>`
+    : "";
+
+  const corrections = result.corrections.length
+    ? `<details class="card" open>
+        <summary>Corrections &amp; natural phrasing (${result.corrections.length})</summary>
+        ${result.corrections
+          .map(
+            (item) => `
+          <div class="correction-item">
+            <p class="issue">${escapeHtml(item.issue)}</p>
+            <p class="suggestion">${escapeHtml(item.suggestion)}</p>
+            <p class="explanation">${escapeHtml(item.explanation)}</p>
+          </div>`
+          )
+          .join("")}
+      </details>`
+    : "";
+
+  els.result.innerHTML = `
+    <article>
+      <p class="primary-text">${escapeHtml(result.translated_text)}</p>
+      <p class="romanization">${escapeHtml(result.romanized_text)}</p>
+    </article>
+    ${note}
+    ${breakdown}
+    ${corrections}
+  `;
+  els.empty.classList.add("hidden");
+  els.loading.classList.add("hidden");
+  els.result.classList.remove("hidden");
+}
+
+function showEmpty() {
+  els.result.innerHTML = "";
+  els.result.classList.add("hidden");
+  els.loading.classList.add("hidden");
+  els.empty.classList.remove("hidden");
+}
+
+async function submit() {
+  const text = els.inputText.value.trim();
+  if (!text) {
+    showBanner("Enter text to translate");
+    els.inputText.focus();
+    return;
+  }
+
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    showBanner("Add your xAI API key in Settings", { openSettings: true });
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const result = await GrokTranslatorService.translate({
+      text,
+      direction,
+      model: getModel(),
+      apiKey,
+    });
+    renderResult(result);
+  } catch (error) {
+    showEmpty();
+    showBanner(error instanceof Error ? error.message : "Translation failed");
+  } finally {
+    setLoading(false);
+  }
+}
+
+function clearAll() {
+  els.inputText.value = "";
+  GrokTranslatorService.clear();
+  hideBanner();
+  showEmpty();
+  els.inputText.focus();
+}
+
+function toggleDirection() {
+  direction = swapDirection(direction);
+  applyDirectionLabels();
+}
+
+els.submitBtn.addEventListener("click", submit);
+els.clearBtn.addEventListener("click", clearAll);
+els.directionBtn.addEventListener("click", toggleDirection);
+els.inputText.addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+    event.preventDefault();
+    submit();
+  }
+});
+
+applyDirectionLabels();
+
+if ((window.isSecureContext || location.hostname === "localhost") && "serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js").catch(() => {});
+}
