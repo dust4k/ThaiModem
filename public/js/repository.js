@@ -1,5 +1,7 @@
 import { makeSavedWord, normalizeWord, createId } from "./models.js";
 import { initFlashcards } from "./flashcards.js";
+import { getApiKey, getModel } from "./settings.js";
+import { generateWordContext } from "./wordContext.js";
 
 const STORAGE_KEY = "savedWords";
 
@@ -113,10 +115,15 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
-function renderRepoList(words) {
+/**
+ * @param {import("./models.js").SavedWord[]} words
+ * @param {string | null} selectedId
+ */
+function renderRepoList(words, selectedId) {
   const list = document.getElementById("repository-list");
   const count = document.getElementById("repository-count");
   const practiceBtn = document.getElementById("repository-practice");
+  const contextBtn = document.getElementById("repository-context-btn");
   if (!list || !count) {
     return;
   }
@@ -125,6 +132,11 @@ function renderRepoList(words) {
 
   if (practiceBtn) {
     practiceBtn.classList.toggle("hidden", words.length === 0);
+  }
+
+  if (contextBtn) {
+    contextBtn.classList.toggle("hidden", words.length === 0);
+    contextBtn.disabled = !selectedId;
   }
 
   if (!words.length) {
@@ -136,7 +148,7 @@ function renderRepoList(words) {
   list.innerHTML = words
     .map(
       (word) => `
-    <div class="repo-row" data-id="${escapeHtml(word.id)}">
+    <div class="repo-row${word.id === selectedId ? " is-selected" : ""}" data-id="${escapeHtml(word.id)}" role="button" tabindex="0" aria-pressed="${word.id === selectedId ? "true" : "false"}">
       <div class="breakdown-content">
         <div class="breakdown-original">${escapeHtml(word.original_word)}</div>
         <div class="breakdown-meta">
@@ -166,17 +178,47 @@ function updateSavedBadge() {
   }
 }
 
+function hideContextPanel(panel) {
+  panel.classList.add("hidden");
+  panel.innerHTML = "";
+}
+
+function showContextLoading(panel) {
+  panel.classList.remove("hidden");
+  panel.innerHTML = '<p class="repo-context-loading">Generating example sentence…</p>';
+}
+
+function showContextResult(panel, result) {
+  panel.classList.remove("hidden");
+  panel.innerHTML = `
+    <p class="repo-context-sentence">${escapeHtml(result.sentence_thai)}</p>
+    <p class="repo-context-romanization">${escapeHtml(result.romanization)}</p>
+    <p class="repo-context-meaning">${escapeHtml(result.meaning)}</p>
+  `;
+}
+
+function showContextError(panel, message) {
+  panel.classList.remove("hidden");
+  panel.innerHTML = `<p class="repo-context-loading">${escapeHtml(message)}</p>`;
+}
+
 /**
- * @param {{ onChange?: () => void }} [options]
+ * @param {{ onChange?: () => void, onError?: (message: string, options?: { openSettings?: boolean }) => void }} [options]
  */
 export function initRepository(options = {}) {
   const modal = document.getElementById("repository-modal");
   const openBtn = document.getElementById("saved-btn");
   const closeBtn = document.getElementById("repository-close");
   const practiceBtn = document.getElementById("repository-practice");
+  const contextBtn = document.getElementById("repository-context-btn");
   const list = document.getElementById("repository-list");
+  const contextPanel = document.getElementById("repository-context");
   const listView = document.getElementById("repository-list-view");
   const practiceView = document.getElementById("repository-practice-view");
+
+  /** @type {string | null} */
+  let selectedId = null;
+  let contextLoading = false;
 
   function showListView() {
     listView?.classList.remove("hidden");
@@ -193,8 +235,23 @@ export function initRepository(options = {}) {
     onExit: showListView,
   });
 
+  function selectWord(id) {
+    selectedId = selectedId === id ? null : id;
+    if (contextPanel) {
+      hideContextPanel(contextPanel);
+    }
+    renderRepoList(loadSavedWords(), selectedId);
+  }
+
   function refresh() {
-    renderRepoList(loadSavedWords());
+    const words = loadSavedWords();
+    if (selectedId && !words.some((word) => word.id === selectedId)) {
+      selectedId = null;
+      if (contextPanel) {
+        hideContextPanel(contextPanel);
+      }
+    }
+    renderRepoList(words, selectedId);
     updateSavedBadge();
     options.onChange?.();
   }
@@ -202,11 +259,61 @@ export function initRepository(options = {}) {
   function open() {
     showListView();
     flashcards.exitSession();
+    selectedId = null;
+    contextLoading = false;
+    if (contextPanel) {
+      hideContextPanel(contextPanel);
+    }
     refresh();
     if (typeof modal.showModal === "function") {
       modal.showModal();
     } else {
       modal.setAttribute("open", "");
+    }
+  }
+
+  async function showContext() {
+    if (!selectedId || contextLoading || !contextPanel) {
+      return;
+    }
+
+    const word = loadSavedWords().find((item) => item.id === selectedId);
+    if (!word) {
+      return;
+    }
+
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      options.onError?.("Add your xAI API key in Settings", { openSettings: true });
+      return;
+    }
+
+    contextLoading = true;
+    if (contextBtn) {
+      contextBtn.disabled = true;
+    }
+    showContextLoading(contextPanel);
+
+    try {
+      const result = await generateWordContext({
+        word: word.original_word,
+        meaning: word.meaning,
+        part_of_speech: word.part_of_speech,
+        romanization: word.romanization,
+        model: getModel(),
+        apiKey,
+      });
+      showContextResult(contextPanel, result);
+    } catch (error) {
+      showContextError(
+        contextPanel,
+        error instanceof Error ? error.message : "Could not generate context"
+      );
+    } finally {
+      contextLoading = false;
+      if (contextBtn) {
+        contextBtn.disabled = !selectedId;
+      }
     }
   }
 
@@ -217,22 +324,59 @@ export function initRepository(options = {}) {
       showPracticeView();
     }
   });
+  contextBtn?.addEventListener("click", showContext);
 
   list?.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) {
       return;
     }
-    const button = target.closest(".repo-remove");
-    if (!(button instanceof HTMLButtonElement)) {
+
+    const removeBtn = target.closest(".repo-remove");
+    if (removeBtn instanceof HTMLButtonElement) {
+      const id = removeBtn.dataset.id;
+      if (!id) {
+        return;
+      }
+      if (selectedId === id) {
+        selectedId = null;
+        if (contextPanel) {
+          hideContextPanel(contextPanel);
+        }
+      }
+      removeWord(id);
+      refresh();
       return;
     }
-    const id = button.dataset.id;
+
+    const row = target.closest(".repo-row");
+    if (!(row instanceof HTMLElement)) {
+      return;
+    }
+    const id = row.dataset.id;
     if (!id) {
       return;
     }
-    removeWord(id);
-    refresh();
+    selectWord(id);
+  });
+
+  list?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") {
+      return;
+    }
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+    const row = target.closest(".repo-row");
+    if (!(row instanceof HTMLElement) || target.closest(".repo-remove")) {
+      return;
+    }
+    event.preventDefault();
+    const id = row.dataset.id;
+    if (id) {
+      selectWord(id);
+    }
   });
 
   updateSavedBadge();

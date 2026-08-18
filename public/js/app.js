@@ -15,6 +15,7 @@ const els = {
   outputLanguage: document.getElementById("output-language"),
   submitBtn: document.getElementById("submit-btn"),
   clearBtn: document.getElementById("clear-btn"),
+  pasteBtn: document.getElementById("paste-btn"),
   empty: document.getElementById("output-empty"),
   loading: document.getElementById("output-loading"),
   loadingText: document.getElementById("output-loading-text"),
@@ -26,7 +27,9 @@ let bannerTimer = 0;
 let lastResult = null;
 
 const settings = initSettings();
-const repository = initRepository();
+const repository = initRepository({
+  onError: (message, opts) => showBanner(message, opts),
+});
 
 function escapeHtml(value) {
   return String(value)
@@ -256,6 +259,30 @@ function clearAll() {
   els.inputText.focus();
 }
 
+async function pasteFromClipboard() {
+  if (els.inputText.disabled) {
+    return;
+  }
+
+  if (!navigator.clipboard?.readText) {
+    showBanner("Clipboard paste is not supported in this browser");
+    return;
+  }
+
+  try {
+    const text = (await navigator.clipboard.readText()).trim();
+    if (!text) {
+      showBanner("Clipboard is empty");
+      return;
+    }
+    els.inputText.value = text;
+    applyDirectionLabels();
+    els.inputText.focus();
+  } catch {
+    showBanner("Could not read clipboard — allow paste permission if prompted");
+  }
+}
+
 async function handlePaste(event) {
   const image = readImageFromClipboard(event.clipboardData);
   if (!image) {
@@ -296,6 +323,7 @@ async function handlePaste(event) {
 
 els.submitBtn.addEventListener("click", submit);
 els.clearBtn.addEventListener("click", clearAll);
+els.pasteBtn?.addEventListener("click", pasteFromClipboard);
 els.inputText.addEventListener("input", applyDirectionLabels);
 els.inputText.addEventListener("paste", handlePaste);
 els.inputText.addEventListener("keydown", (event) => {

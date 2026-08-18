@@ -12,7 +12,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
-from grok_backend import handle_ocr_thai, handle_translate, read_json_body, send_json, send_options
+from grok_backend import handle_ocr_thai, handle_translate, handle_word_context, read_json_body, send_json, send_options
 
 ROOT = Path(__file__).resolve().parent
 PUBLIC = ROOT / "public"
@@ -54,7 +54,7 @@ class ThaiModemHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         route = self.path.split("?", 1)[0]
-        if route not in {"/api/translate", "/api/ocr-thai"}:
+        if route not in {"/api/translate", "/api/ocr-thai", "/api/word-context"}:
             self.send_error(404, "Not found")
             return
 
@@ -67,8 +67,10 @@ class ThaiModemHandler(SimpleHTTPRequestHandler):
         api_key = (self.headers.get("X-Api-Key") or "").strip()
         if route == "/api/translate":
             status, payload = handle_translate(api_key, data)
-        else:
+        elif route == "/api/ocr-thai":
             status, payload = handle_ocr_thai(api_key, data)
+        else:
+            status, payload = handle_word_context(api_key, data)
         send_json(self, status, payload)
 
 

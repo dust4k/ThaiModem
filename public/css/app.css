@@ -139,7 +139,7 @@ body {
 
 .control-bar {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr auto auto;
   gap: 8px;
   align-items: center;
 }
@@ -505,10 +505,51 @@ body {
   gap: 10px;
   padding: 12px 14px;
   border-top: 1px solid var(--line);
+  cursor: pointer;
 }
 
 .repo-row:first-child {
   border-top: 0;
+}
+
+.repo-row.is-selected {
+  background: #e7f3ea;
+  box-shadow: inset 3px 0 0 var(--ok);
+}
+
+.repository-context {
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.repository-context.hidden {
+  display: none;
+}
+
+.repo-context-sentence {
+  margin: 0 0 6px;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+.repo-context-romanization {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.repo-context-meaning {
+  margin: 0;
+  font-size: 14px;
+}
+
+.repo-context-loading {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .repo-remove {
@@ -526,6 +567,10 @@ body {
 
 .repository-menu {
   gap: 8px;
+}
+
+#repository-context-btn:not(.hidden) {
+  margin-right: auto;
 }
 
 .repository-view.hidden {

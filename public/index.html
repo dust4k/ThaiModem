@@ -50,6 +50,9 @@
           Saved
           <span id="saved-count" class="saved-count hidden" aria-hidden="true"></span>
         </button>
+        <button id="paste-btn" class="bar-btn icon-btn" type="button" aria-label="Paste from clipboard">
+          📋
+        </button>
         <button id="settings-btn" class="bar-btn icon-btn" type="button" aria-label="Settings">
           ⚙
         </button>
@@ -120,7 +123,11 @@
             <p><span id="repository-count">0</span> saved on this device</p>
           </header>
           <div id="repository-list" class="repository-list"></div>
+          <div id="repository-context" class="repository-context hidden" aria-live="polite"></div>
           <menu class="repository-menu">
+            <button id="repository-context-btn" type="button" class="bar-btn hidden" disabled>
+              Show context
+            </button>
             <button id="repository-practice" type="button" class="bar-btn hidden">Practice</button>
             <button id="repository-close" type="button" class="bar-btn bar-btn-primary">Done</button>
           </menu>

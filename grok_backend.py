@@ -52,6 +52,30 @@ no URLs, no watermarks, no commentary, and no text you are not confident is in t
 Preserve line breaks within the Thai content.
 If there is no Thai text, return an empty string."""
 
+CONTEXT_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "additionalProperties": False,
+    "properties": {
+        "sentence_thai": {
+            "type": "string",
+            "description": "A simple example sentence in Thai using the target word.",
+        },
+        "romanization": {
+            "type": "string",
+            "description": "RTGS romanization of the Thai sentence.",
+        },
+        "meaning": {
+            "type": "string",
+            "description": "English translation of the sentence.",
+        },
+    },
+    "required": ["sentence_thai", "romanization", "meaning"],
+}
+
+CONTEXT_SYSTEM_PROMPT = """You are an expert Thai language teacher helping learners see words in context.
+
+Return only structured JSON that matches the provided schema."""
+
 TRANSLATION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "additionalProperties": False,
@@ -365,6 +389,76 @@ def handle_ocr_thai(api_key: str, data: dict[str, Any]) -> tuple[int, dict[str, 
         return 400, {"error": "No Thai text found in image"}
 
     return 200, {"text": text}
+
+
+def call_grok_context(
+    api_key: str,
+    word: str,
+    meaning: str,
+    part_of_speech: str,
+    romanization: str,
+    model: str,
+) -> dict[str, Any]:
+    user_content = (
+        "Write one simple, natural Thai example sentence that uses the target word.\n"
+        "Keep it short (roughly 5–12 words) and suitable for a beginner–intermediate learner.\n"
+        "Use the word in a typical, everyday way.\n\n"
+        f"Target word: {word}\n"
+        f"Romanization: {romanization}\n"
+        f"Part of speech: {part_of_speech}\n"
+        f"English meaning: {meaning}"
+    )
+    payload = {
+        "model": model,
+        "temperature": 0.4,
+        "messages": [
+            {"role": "system", "content": CONTEXT_SYSTEM_PROMPT},
+            {"role": "user", "content": user_content},
+        ],
+        "response_format": {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "word_context",
+                "strict": True,
+                "schema": CONTEXT_SCHEMA,
+            },
+        },
+    }
+    return post_grok_json(api_key, payload)
+
+
+def handle_word_context(api_key: str, data: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+    if not api_key:
+        return 400, {"error": "Missing API key"}
+
+    word = str(data.get("word") or "").strip()
+    if not word:
+        return 400, {"error": "Missing word"}
+
+    meaning = str(data.get("meaning") or "").strip()
+    part_of_speech = str(data.get("part_of_speech") or "").strip()
+    romanization = str(data.get("romanization") or "").strip()
+
+    model = str(data.get("model") or DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    if model not in ALLOWED_MODELS:
+        return 400, {"error": "Unsupported model"}
+
+    try:
+        result = call_grok_context(
+            api_key, word, meaning, part_of_speech, romanization, model
+        )
+    except RuntimeError as exc:
+        return grok_error_status(str(exc)), {"error": str(exc)}
+
+    sentence = str(result.get("sentence_thai") or "").strip()
+    if not sentence:
+        return 502, {"error": "Could not generate context sentence"}
+
+    return 200, {
+        "sentence_thai": sentence,
+        "romanization": str(result.get("romanization") or "").strip(),
+        "meaning": str(result.get("meaning") or "").strip(),
+    }
 
 
 def send_json(httpd: Any, status: int, payload: dict[str, Any]) -> None:
