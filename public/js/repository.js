@@ -1,4 +1,5 @@
 import { makeSavedWord, normalizeWord, createId } from "./models.js";
+import { initFlashcards } from "./flashcards.js";
 
 const STORAGE_KEY = "savedWords";
 
@@ -115,11 +116,16 @@ function escapeHtml(value) {
 function renderRepoList(words) {
   const list = document.getElementById("repository-list");
   const count = document.getElementById("repository-count");
+  const practiceBtn = document.getElementById("repository-practice");
   if (!list || !count) {
     return;
   }
 
   count.textContent = String(words.length);
+
+  if (practiceBtn) {
+    practiceBtn.classList.toggle("hidden", words.length === 0);
+  }
 
   if (!words.length) {
     list.innerHTML =
@@ -167,7 +173,25 @@ export function initRepository(options = {}) {
   const modal = document.getElementById("repository-modal");
   const openBtn = document.getElementById("saved-btn");
   const closeBtn = document.getElementById("repository-close");
+  const practiceBtn = document.getElementById("repository-practice");
   const list = document.getElementById("repository-list");
+  const listView = document.getElementById("repository-list-view");
+  const practiceView = document.getElementById("repository-practice-view");
+
+  function showListView() {
+    listView?.classList.remove("hidden");
+    practiceView?.classList.add("hidden");
+  }
+
+  function showPracticeView() {
+    listView?.classList.add("hidden");
+    practiceView?.classList.remove("hidden");
+  }
+
+  const flashcards = initFlashcards({
+    loadWords: loadSavedWords,
+    onExit: showListView,
+  });
 
   function refresh() {
     renderRepoList(loadSavedWords());
@@ -176,6 +200,8 @@ export function initRepository(options = {}) {
   }
 
   function open() {
+    showListView();
+    flashcards.exitSession();
     refresh();
     if (typeof modal.showModal === "function") {
       modal.showModal();
@@ -186,6 +212,11 @@ export function initRepository(options = {}) {
 
   openBtn?.addEventListener("click", open);
   closeBtn?.addEventListener("click", () => modal.close());
+  practiceBtn?.addEventListener("click", () => {
+    if (flashcards.startSession()) {
+      showPracticeView();
+    }
+  });
 
   list?.addEventListener("click", (event) => {
     const target = event.target;

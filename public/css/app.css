@@ -524,6 +524,118 @@ body {
   padding: 0;
 }
 
+.repository-menu {
+  gap: 8px;
+}
+
+.repository-view.hidden {
+  display: none;
+}
+
+.flashcard-progress {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.flashcard-card {
+  display: grid;
+  gap: 12px;
+  min-height: 180px;
+  padding: 4px 0;
+}
+
+.flashcard-pos {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.flashcard-pos.hidden {
+  display: none;
+}
+
+.flashcard-prompt {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.35;
+  font-weight: 650;
+}
+
+.flashcard-input {
+  width: 100%;
+  font: inherit;
+  font-size: 20px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: inherit;
+}
+
+.flashcard-input:focus {
+  outline: 2px solid var(--teal);
+  outline-offset: 1px;
+}
+
+.flashcard-input:disabled {
+  opacity: 0.7;
+  background: #faf7f0;
+}
+
+.flashcard-feedback {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.flashcard-feedback.is-correct {
+  background: rgba(44, 107, 69, 0.12);
+  color: var(--ok);
+  font-weight: 650;
+}
+
+.flashcard-feedback.is-wrong {
+  background: rgba(154, 59, 30, 0.1);
+  color: var(--warn);
+}
+
+.flashcard-feedback.is-wrong strong {
+  font-size: 18px;
+  color: var(--ink);
+}
+
+.flashcard-romanization {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.flashcard-summary {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  text-align: center;
+}
+
+.flashcard-summary p {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 650;
+}
+
+.flashcard-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
 @media (min-width: 720px) {
   .app {
     max-width: 640px;

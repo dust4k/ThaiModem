@@ -44,6 +44,7 @@ The key is stored only in this browser / home-screen app (`localStorage`). It is
 - **Center bar:** Clear, **Saved** (review vocabulary), Settings.
 - **Bottom panel:** translation, RTGS romanization, expandable word breakdown, and (for Thai input) corrections / more natural phrasing.
 - **Remember words:** tap words in the breakdown to highlight them, tap **Remember**, then open **Saved** to review them later. Vocabulary is stored on your iPhone in `localStorage` (same origin as the app URL).
+- **Practice:** in **Saved**, tap **Practice** to run flashcards — English prompt, type the Thai translation, then check your answer.
 
 On a computer keyboard, Ctrl+Enter also submits.
 
@@ -62,6 +63,7 @@ public/js/grokTranslator.js
 public/js/imageOcr.js     Clipboard image prep + Thai OCR client
 public/js/settings.js
 public/js/repository.js
+public/js/flashcards.js
 public/js/app.js
 public/manifest.webmanifest
 public/sw.js

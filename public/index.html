@@ -39,7 +39,6 @@
           autocorrect="on"
           spellcheck="true"
         ></textarea>
-        <p class="input-hint">Paste a screenshot to read Thai text</p>
         <button id="submit-btn" class="submit-btn" type="button">
           Translate
         </button>
@@ -115,14 +114,50 @@
 
     <dialog id="repository-modal" class="repository-modal">
       <div class="repository-body">
-        <header>
-          <h2>Saved words</h2>
-          <p><span id="repository-count">0</span> saved on this device</p>
-        </header>
-        <div id="repository-list" class="repository-list"></div>
-        <menu>
-          <button id="repository-close" type="button" class="bar-btn bar-btn-primary">Done</button>
-        </menu>
+        <div id="repository-list-view" class="repository-view">
+          <header>
+            <h2>Saved words</h2>
+            <p><span id="repository-count">0</span> saved on this device</p>
+          </header>
+          <div id="repository-list" class="repository-list"></div>
+          <menu class="repository-menu">
+            <button id="repository-practice" type="button" class="bar-btn hidden">Practice</button>
+            <button id="repository-close" type="button" class="bar-btn bar-btn-primary">Done</button>
+          </menu>
+        </div>
+
+        <div id="repository-practice-view" class="repository-view hidden">
+          <header>
+            <h2>Practice</h2>
+            <p id="flashcard-progress" class="flashcard-progress">1 / 1</p>
+          </header>
+          <div id="flashcard-card" class="flashcard-card">
+            <p id="flashcard-pos" class="flashcard-pos"></p>
+            <p id="flashcard-prompt" class="flashcard-prompt"></p>
+            <label class="sr-only" for="flashcard-input">Thai translation</label>
+            <input
+              id="flashcard-input"
+              class="flashcard-input"
+              type="text"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
+              placeholder="Type the Thai translation"
+            />
+            <div id="flashcard-feedback" class="flashcard-feedback hidden" role="status"></div>
+          </div>
+          <div id="flashcard-summary" class="flashcard-summary hidden">
+            <p id="flashcard-score"></p>
+          </div>
+          <menu class="flashcard-actions">
+            <button id="flashcard-exit" type="button" class="bar-btn">Exit</button>
+            <button id="flashcard-check" type="button" class="bar-btn bar-btn-primary">Check</button>
+            <button id="flashcard-next" type="button" class="bar-btn bar-btn-primary hidden">Next</button>
+            <button id="flashcard-again" type="button" class="bar-btn bar-btn-primary hidden">
+              Practice again
+            </button>
+          </menu>
+        </div>
       </div>
     </dialog>
 
