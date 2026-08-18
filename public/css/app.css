@@ -131,7 +131,7 @@ body {
 
 .control-bar {
   display: grid;
-  grid-template-columns: 1fr 1.2fr 1fr auto;
+  grid-template-columns: 1fr 1fr auto;
   gap: 8px;
   align-items: center;
 }
@@ -514,20 +514,6 @@ body {
   padding: 0;
 }
 
-@media (max-width: 380px) {
-  .control-bar {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .saved-btn {
-    grid-column: 1;
-  }
-
-  .icon-btn {
-    grid-column: 2;
-    justify-self: end;
-  }
-}
 @media (min-width: 720px) {
   .app {
     max-width: 640px;

@@ -28,13 +28,13 @@
       <section class="panel panel-input" id="input-panel" aria-label="Input">
         <header class="panel-header">
           <span class="panel-kicker">Input</span>
-          <h1 id="input-language">English</h1>
+          <h1 id="input-language">English / ไทย</h1>
         </header>
         <label class="sr-only" for="input-text">Text to translate</label>
         <textarea
           id="input-text"
           rows="4"
-          placeholder="Type English here…"
+          placeholder="Type English or Thai…"
           autocomplete="off"
           autocorrect="on"
           spellcheck="true"
@@ -46,9 +46,6 @@
 
       <nav class="control-bar" aria-label="Translator controls">
         <button id="clear-btn" class="bar-btn" type="button">Clear</button>
-        <button id="direction-btn" class="bar-btn bar-btn-primary" type="button">
-          EN → TH
-        </button>
         <button id="saved-btn" class="bar-btn saved-btn" type="button">
           Saved
           <span id="saved-count" class="saved-count hidden" aria-hidden="true"></span>
@@ -61,7 +58,7 @@
       <section class="panel panel-output" id="output-panel" aria-label="Output" aria-live="polite">
         <header class="panel-header">
           <span class="panel-kicker">Output</span>
-          <h2 id="output-language">ไทย</h2>
+          <h2 id="output-language">Translation</h2>
         </header>
         <div id="output-scroll" class="output-scroll">
           <div id="output-empty" class="empty-state">

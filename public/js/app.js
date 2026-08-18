@@ -1,4 +1,4 @@
-import { Direction, labelsFor, swapDirection } from "./models.js";
+import { detectDirection, labelsFor, labelsForNeutral } from "./models.js";
 import { GrokTranslatorService } from "./grokTranslator.js";
 import { getApiKey, getModel, initSettings } from "./settings.js";
 import { initRepository, saveWords } from "./repository.js";
@@ -10,13 +10,11 @@ const els = {
   outputLanguage: document.getElementById("output-language"),
   submitBtn: document.getElementById("submit-btn"),
   clearBtn: document.getElementById("clear-btn"),
-  directionBtn: document.getElementById("direction-btn"),
   empty: document.getElementById("output-empty"),
   loading: document.getElementById("output-loading"),
   result: document.getElementById("output-result"),
 };
 
-let direction = Direction.englishToThai;
 let bannerTimer = 0;
 /** @type {import("./models.js").TranslationResult | null} */
 let lastResult = null;
@@ -50,17 +48,16 @@ function hideBanner() {
 els.banner.addEventListener("click", hideBanner);
 
 function applyDirectionLabels() {
-  const labels = labelsFor(direction);
+  const text = els.inputText.value.trim();
+  const labels = text ? labelsFor(detectDirection(text)) : labelsForNeutral();
   els.inputLanguage.textContent = labels.input;
   els.outputLanguage.textContent = labels.output;
   els.inputText.placeholder = labels.placeholder;
-  els.directionBtn.textContent = labels.toggle;
 }
 
 function setLoading(isLoading) {
   els.submitBtn.disabled = isLoading;
   els.inputText.disabled = isLoading;
-  els.directionBtn.disabled = isLoading;
   els.loading.classList.toggle("hidden", !isLoading);
   if (isLoading) {
     els.empty.classList.add("hidden");
@@ -218,7 +215,7 @@ async function submit() {
   try {
     const result = await GrokTranslatorService.translate({
       text,
-      direction,
+      direction: detectDirection(text),
       model: getModel(),
       apiKey,
     });
@@ -236,17 +233,13 @@ function clearAll() {
   GrokTranslatorService.clear();
   hideBanner();
   showEmpty();
-  els.inputText.focus();
-}
-
-function toggleDirection() {
-  direction = swapDirection(direction);
   applyDirectionLabels();
+  els.inputText.focus();
 }
 
 els.submitBtn.addEventListener("click", submit);
 els.clearBtn.addEventListener("click", clearAll);
-els.directionBtn.addEventListener("click", toggleDirection);
+els.inputText.addEventListener("input", applyDirectionLabels);
 els.inputText.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
     event.preventDefault();

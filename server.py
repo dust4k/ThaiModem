@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 import socket
 import ssl
 import sys
@@ -161,6 +162,15 @@ def grok_error_message(status: int, body: str) -> str:
     return f"Grok API error ({status})"
 
 
+THAI_SCRIPT = re.compile(r"[\u0E00-\u0E7F]")
+
+
+def detect_direction(text: str) -> str:
+    if THAI_SCRIPT.search(text):
+        return "thaiToEnglish"
+    return "englishToThai"
+
+
 def call_grok(api_key: str, text: str, direction: str, model: str) -> dict[str, Any]:
     if direction == "thaiToEnglish":
         user_content = (
@@ -304,8 +314,10 @@ class ThaiModemHandler(SimpleHTTPRequestHandler):
             self._send_json(400, {"error": "Enter text to translate"})
             return
 
-        direction = str(data.get("direction") or "englishToThai")
-        if direction not in {"englishToThai", "thaiToEnglish"}:
+        direction = str(data.get("direction") or "").strip()
+        if not direction or direction == "auto":
+            direction = detect_direction(text)
+        elif direction not in {"englishToThai", "thaiToEnglish"}:
             self._send_json(400, {"error": "Invalid translation direction"})
             return
 

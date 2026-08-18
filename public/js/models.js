@@ -39,6 +39,18 @@ export const Direction = Object.freeze({
   thaiToEnglish: "thaiToEnglish",
 });
 
+const THAI_SCRIPT = /[\u0E00-\u0E7F]/;
+
+/**
+ * @param {string} text
+ * @returns {TranslationDirection}
+ */
+export function detectDirection(text) {
+  return THAI_SCRIPT.test(text.trim())
+    ? Direction.thaiToEnglish
+    : Direction.englishToThai;
+}
+
 /**
  * @param {unknown} value
  * @returns {string}
@@ -94,6 +106,14 @@ export function normalizeResult(raw) {
   };
 }
 
+export function labelsForNeutral() {
+  return {
+    input: "English / ไทย",
+    output: "Translation",
+    placeholder: "Type English or Thai…",
+  };
+}
+
 /**
  * @param {TranslationDirection} direction
  */
@@ -103,25 +123,13 @@ export function labelsFor(direction) {
       input: "ไทย",
       output: "English",
       placeholder: "พิมพ์ภาษาไทยที่นี่…",
-      toggle: "TH → EN",
     };
   }
   return {
     input: "English",
     output: "ไทย",
     placeholder: "Type English here…",
-    toggle: "EN → TH",
   };
-}
-
-/**
- * @param {TranslationDirection} direction
- * @returns {TranslationDirection}
- */
-export function swapDirection(direction) {
-  return direction === Direction.englishToThai
-    ? Direction.thaiToEnglish
-    : Direction.englishToThai;
 }
 
 /** @returns {string} */

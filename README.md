@@ -40,8 +40,8 @@ The key is stored only in this browser / home-screen app (`localStorage`). It is
 
 ## Use
 
-- **Top panel:** type English or Thai and tap **Translate**.
-- **Center bar:** Clear, swap **EN → TH** / **TH → EN**, **Saved** (review vocabulary), Settings.
+- **Top panel:** type English or Thai and tap **Translate**. Direction is detected automatically from what you type.
+- **Center bar:** Clear, **Saved** (review vocabulary), Settings.
 - **Bottom panel:** translation, RTGS romanization, expandable word breakdown, and (for Thai input) corrections / more natural phrasing.
 - **Remember words:** check individual words in the breakdown, tap **Remember**, then open **Saved** to review them later. Vocabulary is stored on your iPhone in `localStorage` (same origin as the app URL).
 
