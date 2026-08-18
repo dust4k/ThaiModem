@@ -259,28 +259,8 @@ function clearAll() {
   els.inputText.focus();
 }
 
-function tryNativePaste() {
-  const before = els.inputText.value;
-  els.inputText.focus({ preventScroll: true });
-
-  try {
-    if (document.execCommand("paste") && els.inputText.value !== before) {
-      return true;
-    }
-  } catch {
-    // execCommand paste is blocked in most browsers; fall through.
-  }
-
-  return false;
-}
-
 function pasteFromClipboard() {
   if (els.inputText.disabled) {
-    return;
-  }
-
-  if (tryNativePaste()) {
-    applyDirectionLabels();
     return;
   }
 
@@ -289,8 +269,8 @@ function pasteFromClipboard() {
     return;
   }
 
-  navigator.clipboard
-    .readText()
+  const pending = navigator.clipboard.readText();
+  pending
     .then((text) => {
       const trimmed = text.trim();
       if (!trimmed) {
@@ -345,10 +325,7 @@ async function handlePaste(event) {
 
 els.submitBtn.addEventListener("click", submit);
 els.clearBtn.addEventListener("click", clearAll);
-els.pasteBtn?.addEventListener("pointerdown", (event) => {
-  event.preventDefault();
-  pasteFromClipboard();
-});
+els.pasteBtn?.addEventListener("click", pasteFromClipboard);
 els.inputText.addEventListener("input", applyDirectionLabels);
 els.inputText.addEventListener("paste", handlePaste);
 els.inputText.addEventListener("keydown", (event) => {
