@@ -40,10 +40,10 @@ The key is stored only in this browser / home-screen app (`localStorage`). It is
 
 ## Use
 
-- **Top panel:** type English or Thai and tap **Translate**. Direction is detected automatically from what you type.
+- **Top panel:** type English or Thai and tap **Translate**. Direction is detected automatically from what you type. **Paste a screenshot** with Thai text into the input box to extract and translate it automatically.
 - **Center bar:** Clear, **Saved** (review vocabulary), Settings.
 - **Bottom panel:** translation, RTGS romanization, expandable word breakdown, and (for Thai input) corrections / more natural phrasing.
-- **Remember words:** check individual words in the breakdown, tap **Remember**, then open **Saved** to review them later. Vocabulary is stored on your iPhone in `localStorage` (same origin as the app URL).
+- **Remember words:** tap words in the breakdown to highlight them, tap **Remember**, then open **Saved** to review them later. Vocabulary is stored on your iPhone in `localStorage` (same origin as the app URL).
 
 On a computer keyboard, Ctrl+Enter also submits.
 
@@ -54,11 +54,12 @@ Plain `http://LAN-IP` only works while the phone can reach the PC. For use away 
 ## Project layout
 
 ```
-server.py                 Python stdlib static server + /api/translate
+server.py                 Python stdlib static server + /api/translate, /api/ocr-thai
 public/index.html         Split-screen PWA shell
 public/css/app.css
 public/js/models.js
 public/js/grokTranslator.js
+public/js/imageOcr.js     Clipboard image prep + Thai OCR client
 public/js/settings.js
 public/js/repository.js
 public/js/app.js

@@ -34,11 +34,12 @@
         <textarea
           id="input-text"
           rows="4"
-          placeholder="Type English or Thai…"
+          placeholder="Enter text to translate"
           autocomplete="off"
           autocorrect="on"
           spellcheck="true"
         ></textarea>
+        <p class="input-hint">Paste a screenshot to read Thai text</p>
         <button id="submit-btn" class="submit-btn" type="button">
           Translate
         </button>
@@ -66,7 +67,7 @@
           </div>
           <div id="output-loading" class="loading-state hidden">
             <div class="spinner" aria-hidden="true"></div>
-            <p>Translating…</p>
+            <p id="output-loading-text">Translating…</p>
           </div>
           <div id="output-result" class="result-stack hidden"></div>
         </div>

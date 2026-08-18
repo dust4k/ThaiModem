@@ -45,7 +45,7 @@ body {
 
 .app {
   display: grid;
-  grid-template-rows: minmax(210px, 0.42fr) auto minmax(280px, 1fr);
+  grid-template-rows: minmax(280px, 0.48fr) auto minmax(260px, 1fr);
   min-height: 100dvh;
   padding: calc(12px + var(--safe-top)) 12px calc(12px + var(--safe-bottom));
   gap: 10px;
@@ -86,7 +86,7 @@ body {
 }
 
 .panel-input textarea {
-  flex: 1;
+  flex: 1 1 auto;
   width: 100%;
   resize: none;
   border: 1px solid var(--line);
@@ -97,12 +97,19 @@ body {
   line-height: 1.45;
   background: #fff;
   color: inherit;
-  min-height: 88px;
+  min-height: 104px;
 }
 
 .panel-input textarea:focus {
   outline: 2px solid var(--teal);
   outline-offset: 1px;
+}
+
+.input-hint {
+  flex-shrink: 0;
+  margin: 8px 2px 0;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .submit-btn,
@@ -116,7 +123,8 @@ body {
 }
 
 .submit-btn {
-  margin-top: 10px;
+  flex-shrink: 0;
+  margin-top: 12px;
   align-self: flex-end;
   background: var(--teal);
   color: #fff;
@@ -280,26 +288,28 @@ body {
 }
 
 .breakdown-selectable {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  display: block;
+  width: 100%;
+  appearance: none;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
-.breakdown-selectable .word-select {
-  flex: 0 0 auto;
-  width: 22px;
-  height: 22px;
-  min-width: 44px;
-  min-height: 44px;
-  margin: 0;
-  accent-color: var(--teal);
-  cursor: pointer;
+.breakdown-selectable.is-selected {
+  background: #e7f3ea;
+  box-shadow: inset 3px 0 0 var(--ok);
 }
 
-.breakdown-content {
-  flex: 1;
-  min-width: 0;
+.breakdown-selectable:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: -2px;
 }
 
 .breakdown-actions {

@@ -110,7 +110,7 @@ export function labelsForNeutral() {
   return {
     input: "English / ไทย",
     output: "Translation",
-    placeholder: "Type English or Thai…",
+    placeholder: "Enter text to translate",
   };
 }
 
@@ -122,13 +122,13 @@ export function labelsFor(direction) {
     return {
       input: "ไทย",
       output: "English",
-      placeholder: "พิมพ์ภาษาไทยที่นี่…",
+      placeholder: "Enter text to translate",
     };
   }
   return {
     input: "English",
     output: "ไทย",
-    placeholder: "Type English here…",
+    placeholder: "Enter text to translate",
   };
 }
 
