@@ -24,6 +24,16 @@
  * @property {string | null} cultural_or_grammar_note
  */
 
+/**
+ * @typedef {object} SavedWord
+ * @property {string} id
+ * @property {string} original_word
+ * @property {string} romanization
+ * @property {string} meaning
+ * @property {string} part_of_speech
+ * @property {string} savedAt
+ */
+
 export const Direction = Object.freeze({
   englishToThai: "englishToThai",
   thaiToEnglish: "thaiToEnglish",
@@ -112,4 +122,31 @@ export function swapDirection(direction) {
   return direction === Direction.englishToThai
     ? Direction.thaiToEnglish
     : Direction.englishToThai;
+}
+
+/** @returns {string} */
+export function createId() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    try {
+      return crypto.randomUUID();
+    } catch {
+      // Fall through when randomUUID is blocked (non-secure HTTP on iPhone).
+    }
+  }
+  return `word-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
+/**
+ * @param {WordBreakdownItem} word
+ * @returns {SavedWord}
+ */
+export function makeSavedWord(word) {
+  return {
+    id: createId(),
+    original_word: word.original_word,
+    romanization: word.romanization,
+    meaning: word.meaning,
+    part_of_speech: word.part_of_speech,
+    savedAt: new Date().toISOString(),
+  };
 }

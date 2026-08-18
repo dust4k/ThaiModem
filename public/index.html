@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="/css/app.css" />
   </head>
   <body>
-    <div id="banner" class="banner hidden" role="alert"></div>
+    <div id="banner" class="banner banner-warn hidden" role="alert"></div>
 
     <main class="app">
       <section class="panel panel-input" id="input-panel" aria-label="Input">
@@ -48,6 +48,10 @@
         <button id="clear-btn" class="bar-btn" type="button">Clear</button>
         <button id="direction-btn" class="bar-btn bar-btn-primary" type="button">
           EN → TH
+        </button>
+        <button id="saved-btn" class="bar-btn saved-btn" type="button">
+          Saved
+          <span id="saved-count" class="saved-count hidden" aria-hidden="true"></span>
         </button>
         <button id="settings-btn" class="bar-btn icon-btn" type="button" aria-label="Settings">
           ⚙
@@ -109,6 +113,19 @@
           </button>
         </menu>
       </form>
+    </dialog>
+
+    <dialog id="repository-modal" class="repository-modal">
+      <div class="repository-body">
+        <header>
+          <h2>Saved words</h2>
+          <p><span id="repository-count">0</span> saved on this device</p>
+        </header>
+        <div id="repository-list" class="repository-list"></div>
+        <menu>
+          <button id="repository-close" type="button" class="bar-btn bar-btn-primary">Done</button>
+        </menu>
+      </div>
     </dialog>
 
     <script type="module" src="/js/app.js"></script>

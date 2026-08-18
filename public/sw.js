@@ -1,4 +1,4 @@
-const CACHE_NAME = "thaimodem-shell-v1";
+const CACHE_NAME = "thaimodem-shell-v3";
 const SHELL = [
   "/",
   "/index.html",
@@ -6,6 +6,7 @@ const SHELL = [
   "/js/models.js",
   "/js/grokTranslator.js",
   "/js/settings.js",
+  "/js/repository.js",
   "/js/app.js",
   "/manifest.webmanifest",
   "/icons/apple-touch-icon.png",

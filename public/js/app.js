@@ -1,6 +1,7 @@
 import { Direction, labelsFor, swapDirection } from "./models.js";
 import { GrokTranslatorService } from "./grokTranslator.js";
 import { getApiKey, getModel, initSettings } from "./settings.js";
+import { initRepository, saveWords } from "./repository.js";
 
 const els = {
   banner: document.getElementById("banner"),
@@ -17,7 +18,11 @@ const els = {
 
 let direction = Direction.englishToThai;
 let bannerTimer = 0;
+/** @type {import("./models.js").TranslationResult | null} */
+let lastResult = null;
+
 const settings = initSettings();
+const repository = initRepository();
 
 function escapeHtml(value) {
   return String(value)
@@ -27,9 +32,10 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
-function showBanner(message, { openSettings = false } = {}) {
+function showBanner(message, { openSettings = false, tone = "warn" } = {}) {
   els.banner.textContent = message;
-  els.banner.classList.remove("hidden");
+  els.banner.classList.remove("hidden", "banner-success", "banner-warn");
+  els.banner.classList.add(tone === "success" ? "banner-success" : "banner-warn");
   window.clearTimeout(bannerTimer);
   bannerTimer = window.setTimeout(() => hideBanner(), 4000);
   if (openSettings) {
@@ -63,21 +69,26 @@ function setLoading(isLoading) {
 }
 
 function renderResult(result) {
+  lastResult = result;
+
   const note = result.cultural_or_grammar_note
     ? `<p class="note">${escapeHtml(result.cultural_or_grammar_note)}</p>`
     : "";
 
   const words = result.word_breakdown
     .map(
-      (word) => `
-      <div class="breakdown-row">
-        <div class="breakdown-original">${escapeHtml(word.original_word)}</div>
-        <div class="breakdown-meta">
-          <span>${escapeHtml(word.romanization)}</span>
-          <span class="pos">${escapeHtml(word.part_of_speech)}</span>
-          <span>${escapeHtml(word.meaning)}</span>
+      (word, index) => `
+      <label class="breakdown-row breakdown-selectable">
+        <input type="checkbox" class="word-select" data-index="${index}" />
+        <div class="breakdown-content">
+          <div class="breakdown-original">${escapeHtml(word.original_word)}</div>
+          <div class="breakdown-meta">
+            <span>${escapeHtml(word.romanization)}</span>
+            <span class="pos">${escapeHtml(word.part_of_speech)}</span>
+            <span>${escapeHtml(word.meaning)}</span>
+          </div>
         </div>
-      </div>`
+      </label>`
     )
     .join("");
 
@@ -85,6 +96,9 @@ function renderResult(result) {
     ? `<details class="card" open>
         <summary>Word breakdown (${result.word_breakdown.length})</summary>
         ${words}
+        <div class="breakdown-actions">
+          <button type="button" class="bar-btn bar-btn-primary remember-btn">Remember</button>
+        </div>
       </details>`
     : "";
 
@@ -116,9 +130,70 @@ function renderResult(result) {
   els.empty.classList.add("hidden");
   els.loading.classList.add("hidden");
   els.result.classList.remove("hidden");
+
+  const rememberBtn = els.result.querySelector(".remember-btn");
+  rememberBtn?.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    rememberSelectedWords();
+  });
+}
+
+function rememberSelectedWords() {
+  if (!lastResult?.word_breakdown.length) {
+    showBanner("No words to remember");
+    return;
+  }
+
+  const checked = [...els.result.querySelectorAll(".word-select:checked")];
+  if (!checked.length) {
+    showBanner("Select words to remember");
+    return;
+  }
+
+  const selected = checked
+    .map((input) => {
+      const index = Number(input.dataset.index);
+      return lastResult.word_breakdown[index];
+    })
+    .filter(Boolean);
+
+  let saved = 0;
+  let skipped = 0;
+  try {
+    ({ saved, skipped } = saveWords(selected));
+  } catch (error) {
+    showBanner(error instanceof Error ? error.message : "Could not save words");
+    return;
+  }
+
+  if (saved === 0 && skipped > 0) {
+    showBanner("Already in your saved words");
+    return;
+  }
+
+  if (saved === 0) {
+    showBanner("Select words to remember");
+    return;
+  }
+
+  checked.forEach((input) => {
+    input.checked = false;
+  });
+
+  repository.updateSavedBadge();
+
+  if (skipped > 0) {
+    showBanner(`Saved ${saved} word${saved === 1 ? "" : "s"} (${skipped} already saved)`, {
+      tone: "success",
+    });
+  } else {
+    showBanner(`Saved ${saved} word${saved === 1 ? "" : "s"}`, { tone: "success" });
+  }
 }
 
 function showEmpty() {
+  lastResult = null;
   els.result.innerHTML = "";
   els.result.classList.add("hidden");
   els.loading.classList.add("hidden");

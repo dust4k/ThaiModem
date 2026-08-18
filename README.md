@@ -41,8 +41,9 @@ The key is stored only in this browser / home-screen app (`localStorage`). It is
 ## Use
 
 - **Top panel:** type English or Thai and tap **Translate**.
-- **Center bar:** Clear, swap **EN → TH** / **TH → EN**, Settings.
+- **Center bar:** Clear, swap **EN → TH** / **TH → EN**, **Saved** (review vocabulary), Settings.
 - **Bottom panel:** translation, RTGS romanization, expandable word breakdown, and (for Thai input) corrections / more natural phrasing.
+- **Remember words:** check individual words in the breakdown, tap **Remember**, then open **Saved** to review them later. Vocabulary is stored on your iPhone in `localStorage` (same origin as the app URL).
 
 On a computer keyboard, Ctrl+Enter also submits.
 
@@ -59,6 +60,7 @@ public/css/app.css
 public/js/models.js
 public/js/grokTranslator.js
 public/js/settings.js
+public/js/repository.js
 public/js/app.js
 public/manifest.webmanifest
 public/sw.js
