@@ -1,0 +1,25 @@
+# Secrets
+.env
+.env.*
+*.pem
+credentials.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node (if you use JavaScript/TypeScript)
+node_modules/
+dist/
+build/
+
+# Python (if you use Python)
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+*.log
