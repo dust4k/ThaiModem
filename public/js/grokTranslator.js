@@ -19,7 +19,7 @@ export async function translate({ text, direction, model, apiKey }) {
       body: JSON.stringify({ text, direction, model }),
     });
   } catch {
-    throw new Error("Network error. Is the ThaiModem server running?");
+    throw new Error("Network error. Check your connection.");
   }
 
   const payload = await readJson(response);

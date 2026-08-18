@@ -1,4 +1,4 @@
-const CACHE_NAME = "thaimodem-shell-v3";
+const CACHE_NAME = "thaimodem-shell-v4";
 const SHELL = [
   "/",
   "/index.html",

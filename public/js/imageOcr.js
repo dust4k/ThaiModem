@@ -88,7 +88,7 @@ export async function extractThaiFromImage({ imageBase64, mimeType, model, apiKe
       body: JSON.stringify({ image: imageBase64, mime_type: mimeType, model }),
     });
   } catch {
-    throw new Error("Network error. Is the ThaiModem server running?");
+    throw new Error("Network error. Check your connection.");
   }
 
   const payload = await readJson(response);
