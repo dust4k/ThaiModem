@@ -182,6 +182,23 @@ body {
   width: 46px;
   padding: 11px 0;
   font-size: 18px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+.bar-icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin: 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 
 .output-scroll {

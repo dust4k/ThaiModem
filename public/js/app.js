@@ -259,8 +259,28 @@ function clearAll() {
   els.inputText.focus();
 }
 
-async function pasteFromClipboard() {
+function tryNativePaste() {
+  const before = els.inputText.value;
+  els.inputText.focus({ preventScroll: true });
+
+  try {
+    if (document.execCommand("paste") && els.inputText.value !== before) {
+      return true;
+    }
+  } catch {
+    // execCommand paste is blocked in most browsers; fall through.
+  }
+
+  return false;
+}
+
+function pasteFromClipboard() {
   if (els.inputText.disabled) {
+    return;
+  }
+
+  if (tryNativePaste()) {
+    applyDirectionLabels();
     return;
   }
 
@@ -269,18 +289,20 @@ async function pasteFromClipboard() {
     return;
   }
 
-  try {
-    const text = (await navigator.clipboard.readText()).trim();
-    if (!text) {
-      showBanner("Clipboard is empty");
-      return;
-    }
-    els.inputText.value = text;
-    applyDirectionLabels();
-    els.inputText.focus();
-  } catch {
-    showBanner("Could not read clipboard — allow paste permission if prompted");
-  }
+  navigator.clipboard
+    .readText()
+    .then((text) => {
+      const trimmed = text.trim();
+      if (!trimmed) {
+        showBanner("Clipboard is empty");
+        return;
+      }
+      els.inputText.value = trimmed;
+      applyDirectionLabels();
+    })
+    .catch(() => {
+      showBanner("Could not read clipboard");
+    });
 }
 
 async function handlePaste(event) {
@@ -323,7 +345,10 @@ async function handlePaste(event) {
 
 els.submitBtn.addEventListener("click", submit);
 els.clearBtn.addEventListener("click", clearAll);
-els.pasteBtn?.addEventListener("click", pasteFromClipboard);
+els.pasteBtn?.addEventListener("pointerdown", (event) => {
+  event.preventDefault();
+  pasteFromClipboard();
+});
 els.inputText.addEventListener("input", applyDirectionLabels);
 els.inputText.addEventListener("paste", handlePaste);
 els.inputText.addEventListener("keydown", (event) => {
