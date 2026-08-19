@@ -133,6 +133,12 @@ function renderResult(result) {
     <article>
       <p class="primary-text">${escapeHtml(result.translated_text)}</p>
       <p class="romanization">${escapeHtml(result.romanized_text)}</p>
+      <button type="button" class="copy-btn icon-btn" aria-label="Copy translation">
+        <svg class="bar-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      </button>
     </article>
     ${note}
     ${breakdown}
@@ -154,6 +160,18 @@ function renderResult(result) {
     event.preventDefault();
     event.stopPropagation();
     rememberSelectedWords();
+  });
+
+  const copyBtn = els.result.querySelector(".copy-btn");
+  copyBtn?.addEventListener("click", () => {
+    if (!navigator.clipboard?.writeText) {
+      showBanner("Copy is not supported in this browser");
+      return;
+    }
+    navigator.clipboard.writeText(result.translated_text).then(
+      () => showBanner("Copied", { tone: "success" }),
+      () => showBanner("Could not copy to clipboard")
+    );
   });
 }
 
